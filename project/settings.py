@@ -20,12 +20,14 @@ DEFAULT_LANG = 'en'
 INSTALLED_APPS = (
     'core',
     'main',
+    'api',
     'admin',
     'kay.auth',
 )
 
 APP_MOUNT_POINTS = {
     'main': '/',
+    'api': '/api',
     'admin': '/admin',
 }
 
