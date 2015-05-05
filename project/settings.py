@@ -3,7 +3,7 @@
 DEFAULT_TIMEZONE = 'UTC'
 DEBUG = True
 PROFILE = False
-SECRET_KEY = 'ReplaceItWithSecretString'
+SECRET_KEY = 'DeepLinkApp'
 SESSION_PREFIX = 'gaesess:'
 COOKIE_AGE = 1209600
 COOKIE_NAME = 'KAY_SESSION'
@@ -21,6 +21,7 @@ INSTALLED_APPS = (
     'core',
     'main',
     'admin',
+    'kay.auth',
 )
 
 APP_MOUNT_POINTS = {
@@ -37,4 +38,6 @@ CONTEXT_PROCESSORS = (
 
 MIDDLEWARE_CLASSES = (
     'kay.utils.flash.FlashMiddleware',
+    'kay.sessions.middleware.SessionMiddleware',
+    'kay.auth.middleware.AuthenticationMiddleware',
 )
