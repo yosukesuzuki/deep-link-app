@@ -1214,7 +1214,7 @@ class RESTViewGroup(ViewGroup):
                 setattr(model, prop_name, prop_value)
                 
         else:
-            model = model_handler.create(props)
+            model = model_handler.create
 
         return model
         
@@ -1252,6 +1252,6 @@ class RESTViewGroup(ViewGroup):
                 setattr(model, prop_name, prop_value)
                 
         else:
-            model = model_handler.create(props)
+            model = model_handler.create
 
         return model

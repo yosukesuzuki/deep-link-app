@@ -43,3 +43,6 @@ MIDDLEWARE_CLASSES = (
     'kay.sessions.middleware.SessionMiddleware',
     'kay.auth.middleware.AuthenticationMiddleware',
 )
+
+AUTH_USER_BACKEND = 'kay.auth.backends.googleaccount.GoogleBackend'
+AUTH_USER_MODEL = 'core.models.ShortURLUser'
