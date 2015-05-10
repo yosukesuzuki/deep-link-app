@@ -36,9 +36,11 @@ handlers:
 - url: /admin/.*
   script: kay.main.application
   login: admin
+  secure: always
 
 - url: /.*
   script: kay.main.application
+  secure: always
 
 libraries:
 - name: jinja2

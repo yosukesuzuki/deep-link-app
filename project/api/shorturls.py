@@ -26,35 +26,62 @@ class URLShorten(object):
         """
         return {'long_url': entity.long_url, 'fallback_url': entity.fallback_url, 'iphone_url': entity.iphone_url,
                 'ipad_url': entity.ipad_url, 'android_url': entity.android_url, 'wp_url': entity.wp_url,
-                'firefox_url': entity.firefox_url}
+                'firefox_url': entity.firefox_url, 'path': entity.key().name()}
+
+    def get(self):
+        query_results = ShortURL.all().filter(u'user_created =', str(self.user.key())).order('-created_at').fetch(
+            self.PAR_PAGE)
+        short_urls = [self.model_to_dict(result) for result in query_results]
+        self.result = {'short_urls': short_urls, 'status': 'success'}
+        self.code = 200
+        return
+
+    def post(self):
+        long_url = self.values['long_url']
+        short_url = ShortURL(long_url=long_url, user_created=str(self.user.key()))
+        self.result = short_url.check_exist_or_create()
+        self.code = self.result['code']
+        return
+
+    def put(self):
+        if self.path is None:
+            return
+        entity = ShortURL.get_by_key_name(self.path)
+        if entity is None:
+            self.result = {'message': 'not found', 'status': 'error'}
+            self.code = 404
+            return
+        if entity.user_created != str(self.user.key()):
+            self.result = {'message': 'bad request', 'status': 'error'}
+            self.code = 400
+            return
+        for property in ['fallback_url', 'iphone_url', 'ipad_url', 'android_url', 'wp_url', 'firefox_url']:
+            if property in self.values:
+                setattr(entity, property, self.values[property])
+        entity.put()
+        short_url = self.model_to_dict(entity)
+        short_url['status'] = 'success'
+        self.result = short_url
+        self.code = 200
+        return
+
+    def delete(self):
+        entity = ShortURL.get_by_key_name(self.path)
+        if entity is None:
+            self.result = {'message': 'not found', 'status': 'error'}
+            self.code = 404
+            return
+        entity.delete()
+        self.result = {'message': 'no content', 'status': 'success'}
+        self.code = 204
+        return
 
     def do(self):
         if self.method == 'GET':
-            query_results = ShortURL.all().filter(u'user_created', self.user.key()).order('-created_at').fetch(
-                self.PAR_PAGE)
-            short_urls = [self.model_to_dict(result) for result in query_results]
-            self.result = {'shorturls': short_urls, 'status': 'success'}
-            self.code = 200
-            return
-        if self.method == 'POST':
-            long_url = self.values['url']
-            short_url = ShortURL(long_url=long_url, user_created=str(self.user.key()))
-            self.result = short_url.check_exist_or_create()
-            self.code = self.result['code']
-            return
-        if self.method == 'PUT' or self.method == 'PATCH':
-            if self.path is None:
-                self.result = {'message': 'bad request', 'status': 'error'}
-                self.code = 400
-                return
-            entity = ShortURL.get_by_key_name(self.path)
-            for property in ['fallback_url', 'iphone_url', 'ipad_url', 'android_url', 'wp_url', 'firefox_url']:
-                if property in self.values:
-                    entity.fallback_url = self.values[property]
-            short_url = self.model_to_dict(entity)
-            short_url['status'] = 'success'
-            self.result = short_url
-            self.code = 200
-            return
-        if self.method == 'DELETE':
-            return
+            self.get()
+        elif self.method == 'POST':
+            self.post()
+        elif self.method == 'PUT' or self.method == 'PATCH':
+            self.put()
+        elif self.method == 'DELETE':
+            self.delete()
