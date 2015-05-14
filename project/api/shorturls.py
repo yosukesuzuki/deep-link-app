@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from core.models import ShortURL
+from core.models import ShortURL, ShortURLCreateLog
 
 
 class URLShorten(object):
@@ -72,6 +72,12 @@ class URLShorten(object):
             self.code = 404
             return
         entity.delete()
+        log_entity_key_name = entity.get_log_entity_key_name()
+        short_url_create_log = ShortURLCreateLog.get_by_key_name(log_entity_key_name)
+        short_urls = short_url_create_log.short_urls
+        short_urls.remove(self.path)
+        short_url_create_log.short_urls = short_urls
+        short_url_create_log.put()
         self.result = {'message': 'no content', 'status': 'success'}
         self.code = 204
         return

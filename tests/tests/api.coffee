@@ -3,7 +3,7 @@ system = require 'system'
 # load global settings
 settings = require '../helpers/settings'
 
-casper.test.begin 'url shorten api', 13, (test) ->
+casper.test.begin 'url shorten api', 5, (test) ->
 
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200
@@ -19,6 +19,8 @@ casper.test.begin 'url shorten api', 13, (test) ->
     @echo @getPageContent()
     jsonData = JSON.parse(@getPageContent())
     test.assertEquals(jsonData.status,"success")
+
+  casper.wait(1000);
 
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200

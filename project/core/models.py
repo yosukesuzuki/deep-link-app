@@ -78,8 +78,10 @@ class ShortURL(db.Model):
         log_entity_key_name = self.get_log_entity_key_name()
         check_entity = ShortURLCreateLog.get_by_key_name(log_entity_key_name)
         if check_entity is not None:
-            return {'message': 'short url already exists', 'status': 'error', 'code': 409,
-                    'path': check_entity.short_urls[0]}
+            # add logic to check the short url exist or not
+            if len(check_entity.short_urls) > 0:
+                return {'message': 'short url already exists', 'status': 'error', 'code': 409,
+                        'path': check_entity.short_urls[0]}
         self.create()
         short_url_create_log = ShortURLCreateLog(key_name=log_entity_key_name, path=self.key().name(),
                                                  long_url=self.long_url,
