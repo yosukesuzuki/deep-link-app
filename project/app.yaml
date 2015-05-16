@@ -38,6 +38,11 @@ handlers:
   login: admin
   secure: always
 
+- url: /config/.*
+  script: kay.main.application
+  login: required
+  secure: always
+
 - url: /.*
   script: kay.main.application
   secure: always

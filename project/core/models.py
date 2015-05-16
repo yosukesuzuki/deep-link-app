@@ -2,8 +2,10 @@
 # core.models
 
 import hashlib
+import uuid
 
 from google.appengine.ext import db
+from google.appengine.api import memcache
 from kay.auth.models import GoogleUser
 
 
@@ -148,3 +150,44 @@ class ShortURLRule(db.Model):
     user_created = db.StringProperty(verbose_name='Key of ShortURLUser')
     updated_at = db.DateTimeProperty(auto_now=True)
     created_at = db.DateTimeProperty(auto_now_add=True)
+
+
+class APIKey(db.Model):
+    description = db.StringProperty(verbose_name='Description for usage')
+    user_created = db.StringProperty(verbose_name='Key of ShortURLUser', required=True)
+    updated_at = db.DateTimeProperty(auto_now=True)
+    created_at = db.DateTimeProperty(auto_now_add=True)
+
+
+def create_api_key(user):
+    key_name = uuid.uuid4().hex
+    user_created = str(user.key())
+    entity = APIKey(key_name=key_name, user_created=user_created)
+    entity.put()
+    memcache_key = 'api-key-%s' % key_name
+    memcache.set(memcache_key, key_name)
+    return key_name
+
+
+def validate_api_key(key_name):
+    """
+    :param key_name: string
+    """
+    memcache_key = 'api-key-%s' % key_name
+    api_key = memcache.get(memcache_key)
+    if api_key is not None:
+        return True
+    api_key_entity = APIKey.get_by_key_name(key_name)
+    if api_key_entity is None:
+        return False
+    memcache.set(memcache_key, key_name)
+    return True
+
+
+def abort_api_key(self, key_name):
+    entity = APIKey.get_by_key_name(key_name)
+    entity.delete()
+    memcache_key = 'api-key-%s' % key_name
+    api_key = memcache.get(memcache_key)
+    if api_key is not None:
+        memcache.delete(memcache_key)
