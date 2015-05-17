@@ -3,7 +3,7 @@
 from google.appengine.api import memcache
 from kay.ext.testutils.gae_test_base import GAETestBase
 
-from core.models import ShortURL, ShortURLID, ShortURLUser, create_api_key, validate_api_key
+from core.models import ShortURL, ShortURLID, ShortURLUser, create_api_key, validate_api_key, abort_api_key
 
 
 class PutShortURLTest(GAETestBase):
@@ -77,3 +77,11 @@ class APIKeyTest(GAETestBase):
         self.assertEquals(validate_api_key(api_key), True)
         memcache_result = memcache.get('api-key-%s' % api_key)
         self.assertEquals(memcache_result, api_key)
+
+    def test_abort(self):
+        user = ShortURLUser(key_name='foobar')
+        user.put()
+        api_key = create_api_key(user)
+        self.assertEquals(validate_api_key(api_key), True)
+        abort_api_key(api_key)
+        self.assertEquals(validate_api_key(api_key), False)

@@ -184,7 +184,7 @@ def validate_api_key(key_name):
     return True
 
 
-def abort_api_key(self, key_name):
+def abort_api_key(key_name):
     entity = APIKey.get_by_key_name(key_name)
     entity.delete()
     memcache_key = 'api-key-%s' % key_name
