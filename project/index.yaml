@@ -10,6 +10,12 @@ indexes:
 # automatically uploaded to the admin console when you next deploy
 # your application using appcfg.py.
 
+- kind: APIKey
+  properties:
+  - name: user_created
+  - name: created_at
+    direction: desc
+
 - kind: ShortURL
   properties:
   - name: user_created

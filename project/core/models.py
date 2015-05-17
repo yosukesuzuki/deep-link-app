@@ -153,10 +153,13 @@ class ShortURLRule(db.Model):
 
 
 class APIKey(db.Model):
-    description = db.StringProperty(verbose_name='Description for usage')
+    description = db.StringProperty(verbose_name='Description of usage')
     user_created = db.StringProperty(verbose_name='Key of ShortURLUser', required=True)
     updated_at = db.DateTimeProperty(auto_now=True)
     created_at = db.DateTimeProperty(auto_now_add=True)
+
+    def __unicode__(self):
+        return self.key().name()
 
 
 def create_api_key(user):
