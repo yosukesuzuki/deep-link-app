@@ -39,6 +39,7 @@ class APIKeyCRUDViewGroup(crud.CRUDViewGroup):
 view_groups = [
     APIKeyCRUDViewGroup(),
     ViewGroup(
+        Rule('/v1/apikeys', endpoint='apikeys', view='api.views.apikey'),
         Rule('/v1/shorturls', endpoint='shorturls', view='api.views.shorturl'),
         Rule('/v1/shorturls/<string:path>', endpoint='shorturls_with_path', view='api.views.shorturl'),
     )

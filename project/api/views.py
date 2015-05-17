@@ -25,17 +25,38 @@ from kay.auth.decorators import login_required
 
 """
 import re
-from kay.auth.decorators import login_required
+from werkzeug.exceptions import BadRequest
 from kay.utils import render_json_response
+from core.models import validate_api_key, APIKey
 from api.shorturls import URLShorten
 
 URLSHORTEN_PATTERN = re.compile("[0-9a-zA-Z]+")
 
+from functools import update_wrapper
 
-@login_required
+def api_auth(func):
+    def inner(request, *args, **kwargs):
+        if request.user.is_anonymous():
+            try:
+                api_key = request.args['key']
+            except BadRequest:
+                return render_json_response({'message': 'bad request', 'status': 'error'}, status=400)
+            if validate_api_key(api_key) is False:
+                return render_json_response({'message': 'invalid key', 'status': 'error'}, status=403)
+        return func(request, *args, **kwargs)
+    update_wrapper(inner, func)
+    return inner
+
+@api_auth
 def shorturl(request, path=None):
     if path is not None and URLSHORTEN_PATTERN.search(path) is False:
         return render_json_response({'message': 'bad request', 'status': 'error'}, status=400)
     shorturls = URLShorten(method=request.method, user=request.user, values=request.values, path=path)
     shorturls.do()
     return render_json_response(shorturls.result, status=shorturls.code)
+
+@api_auth
+def apikey(request):
+    query_results = APIKey.all().filter(u'user_created =', str(request.user.key())).order('-created_at').fetch(20)
+    api_keys = [result.key().name() for result in query_results]
+    return render_json_response({'api_keys':api_keys,'status':'success'}, status=200)
