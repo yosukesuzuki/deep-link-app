@@ -3,7 +3,7 @@ system = require 'system'
 # load global settings
 settings = require '../helpers/settings'
 
-casper.test.begin 'url shorten api', 5, (test) ->
+casper.test.begin 'url shorten api', 6, (test) ->
 
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200
@@ -20,7 +20,7 @@ casper.test.begin 'url shorten api', 5, (test) ->
     jsonData = JSON.parse(@getPageContent())
     test.assertEquals(jsonData.status,"success")
 
-  casper.wait(1000);
+  casper.wait(1000)
 
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200
@@ -28,6 +28,14 @@ casper.test.begin 'url shorten api', 5, (test) ->
     test.assertEquals(jsonData['short_urls'][0].long_url, "http://appu.pw/")
     @thenOpen settings.baseURL() + "/api/v1/shorturls/"+jsonData['short_urls'][0].path,
       method: "delete"
+
+  casper.thenOpen settings.baseURL() + "/api/apikey/list", ->
+    test.assertHttpStatus 200
+    @clickLabel "Create new entity"
+    @waitForSelector "#f_description", ->
+      @sendKeys("#f_description", "hoge")
+      @clickLabel "Save"
+      @waitForSelector "#createEntity"
 
   casper.run ->
     do test.done
