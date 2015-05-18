@@ -34,6 +34,7 @@ URLSHORTEN_PATTERN = re.compile("[0-9a-zA-Z]+")
 
 from functools import update_wrapper
 
+
 def api_auth(func):
     def inner(request, *args, **kwargs):
         if request.user.is_anonymous():
@@ -44,8 +45,10 @@ def api_auth(func):
             if validate_api_key(api_key) is False:
                 return render_json_response({'message': 'invalid key', 'status': 'error'}, status=403)
         return func(request, *args, **kwargs)
+
     update_wrapper(inner, func)
     return inner
+
 
 @api_auth
 def shorturl(request, path=None):
@@ -55,8 +58,9 @@ def shorturl(request, path=None):
     shorturls.do()
     return render_json_response(shorturls.result, status=shorturls.code)
 
+
 @api_auth
 def apikey(request):
     query_results = APIKey.all().filter(u'user_created =', str(request.user.key())).order('-created_at').fetch(20)
     api_keys = [result.key().name() for result in query_results]
-    return render_json_response({'api_keys':api_keys,'status':'success'}, status=200)
+    return render_json_response({'api_keys': api_keys, 'status': 'success'}, status=200)
