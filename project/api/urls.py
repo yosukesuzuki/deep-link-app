@@ -2,8 +2,6 @@
 # api.urls
 import uuid
 
-from google.appengine.api import memcache
-
 from kay.generics import crud
 from kay.generics import login_required
 from kay.routing import (
