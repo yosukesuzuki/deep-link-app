@@ -168,7 +168,7 @@ def create_api_key(user):
     entity = APIKey(key_name=key_name, user_created=user_created)
     entity.put()
     memcache_key = 'api-key-%s' % key_name
-    memcache.set(memcache_key, key_name)
+    memcache.set(memcache_key, entity)
     return key_name
 
 
@@ -177,14 +177,14 @@ def validate_api_key(key_name):
     :param key_name: string
     """
     memcache_key = 'api-key-%s' % key_name
-    api_key = memcache.get(memcache_key)
-    if api_key is not None:
-        return True
+    api_key_entity = memcache.get(memcache_key)
+    if api_key_entity is not None:
+        return api_key_entity
     api_key_entity = APIKey.get_by_key_name(key_name)
     if api_key_entity is None:
         return False
-    memcache.set(memcache_key, key_name)
-    return True
+    memcache.set(memcache_key, api_key_entity)
+    return api_key_entity
 
 
 def abort_api_key(key_name):

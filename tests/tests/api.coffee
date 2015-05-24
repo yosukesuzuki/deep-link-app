@@ -3,7 +3,7 @@ system = require 'system'
 # load global settings
 settings = require '../helpers/settings'
 
-casper.test.begin 'url shorten api', 9, (test) ->
+casper.test.begin 'url shorten api', 14, (test) ->
 
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200
@@ -25,7 +25,8 @@ casper.test.begin 'url shorten api', 9, (test) ->
   casper.thenOpen settings.baseURL() + "/api/v1/shorturls", ->
     test.assertHttpStatus 200
     jsonData = JSON.parse(@getPageContent())
-    test.assertEquals jsonData['short_urls'][0].long_url,"http://appu.pw/"
+    test.assertEquals jsonData["short_urls"].length, 1
+    test.assertEquals jsonData["short_urls"][0].long_url,"http://appu.pw/"
     @thenOpen settings.baseURL() + "/api/v1/shorturls/"+jsonData['short_urls'][0].path,
       method: "delete"
 
@@ -47,6 +48,22 @@ casper.test.begin 'url shorten api', 9, (test) ->
       test.assertHttpStatus 400
     @thenOpen settings.baseURL() + "/api/v1/shorturls?key="+jsonData.api_keys[0], ->
       test.assertHttpStatus 200
-
+    @thenOpen settings.baseURL() + "/api/v1/shorturls?key="+jsonData.api_keys[0],
+      method: "post"
+      data:
+        long_url: "http://appu.pw/hoge1"
+    , ->
+      @echo "POST request has been sent."
+      @echo @getPageContent()
+      test.assertHttpStatus 201
+      @wait(1000)
+    @thenOpen settings.baseURL() + "/api/v1/shorturls?key="+jsonData.api_keys[0], ->
+      test.assertHttpStatus 200
+      jsonDataUrls = JSON.parse(@getPageContent())
+      test.assertEquals jsonDataUrls.short_urls.length, 1
+      @thenOpen settings.baseURL() + "/api/v1/shorturls/"+jsonDataUrls.short_urls[0].path+"?key="+jsonData.api_keys[0],
+        method: "delete"
+      , ->
+        test.assertHttpStatus 204
   casper.run ->
     do test.done

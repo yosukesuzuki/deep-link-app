@@ -6,7 +6,7 @@ from core.models import ShortURL, ShortURLCreateLog
 class URLShorten(object):
     PAR_PAGE = 50
 
-    def __init__(self, method, user, values, path=None):
+    def __init__(self, method, user_created, values, path=None):
         """
         :param str method: REST Method
         :param core.models.ShortURLUser user: model of login user
@@ -14,7 +14,7 @@ class URLShorten(object):
         :param str path:
         """
         self.method = method
-        self.user = user
+        self.user_created = user_created
         self.values = values
         self.path = path
         self.result = {'message': 'bad request', 'status': 'error'}
@@ -29,7 +29,7 @@ class URLShorten(object):
                 'firefox_url': entity.firefox_url, 'path': entity.key().name()}
 
     def get(self):
-        query_results = ShortURL.all().filter(u'user_created =', str(self.user.key())).order('-created_at').fetch(
+        query_results = ShortURL.all().filter(u'user_created =', self.user_created).order('-created_at').fetch(
             self.PAR_PAGE)
         short_urls = [self.model_to_dict(result) for result in query_results]
         self.result = {'short_urls': short_urls, 'status': 'success'}
@@ -38,7 +38,7 @@ class URLShorten(object):
 
     def post(self):
         long_url = self.values['long_url']
-        short_url = ShortURL(long_url=long_url, user_created=str(self.user.key()))
+        short_url = ShortURL(long_url=long_url, user_created=self.user_created)
         self.result = short_url.check_exist_or_create()
         self.code = self.result['code']
         return
@@ -51,7 +51,7 @@ class URLShorten(object):
             self.result = {'message': 'not found', 'status': 'error'}
             self.code = 404
             return
-        if entity.user_created != str(self.user.key()):
+        if entity.user_created != self.user_created:
             self.result = {'message': 'bad request', 'status': 'error'}
             self.code = 400
             return

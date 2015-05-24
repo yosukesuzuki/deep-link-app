@@ -54,7 +54,11 @@ def api_auth(func):
 def shorturl(request, path=None):
     if path is not None and URLSHORTEN_PATTERN.search(path) is False:
         return render_json_response({'message': 'bad request', 'status': 'error'}, status=400)
-    shorturls = URLShorten(method=request.method, user=request.user, values=request.values, path=path)
+    user_created = str(request.user.key())
+    if request.user.is_anonymous():
+        api_key_entity = validate_api_key(request.args['key'])
+        user_created = api_key_entity.user_created
+    shorturls = URLShorten(method=request.method, user_created=user_created, values=request.values, path=path)
     shorturls.do()
     return render_json_response(shorturls.result, status=shorturls.code)
 

@@ -66,22 +66,22 @@ class APIKeyTest(GAETestBase):
         api_key = create_api_key(user)
         memcache_key = 'api-key-%s' % api_key
         memcached_data = memcache.get(memcache_key)
-        self.assertEquals(api_key, memcached_data)
+        self.assertEquals(api_key, memcached_data.key().name())
 
     def test_validate(self):
         user = ShortURLUser(key_name='foobar')
         user.put()
         api_key = create_api_key(user)
-        self.assertEquals(validate_api_key(api_key), True)
+        self.assertNotEquals(validate_api_key(api_key), False)
         memcache.delete('api-key-%s' % api_key)
-        self.assertEquals(validate_api_key(api_key), True)
+        self.assertNotEquals(validate_api_key(api_key), False)
         memcache_result = memcache.get('api-key-%s' % api_key)
-        self.assertEquals(memcache_result, api_key)
+        self.assertEquals(memcache_result.key().name(), api_key)
 
     def test_abort(self):
         user = ShortURLUser(key_name='foobar')
         user.put()
         api_key = create_api_key(user)
-        self.assertEquals(validate_api_key(api_key), True)
+        self.assertNotEquals(validate_api_key(api_key), False)
         abort_api_key(api_key)
         self.assertEquals(validate_api_key(api_key), False)

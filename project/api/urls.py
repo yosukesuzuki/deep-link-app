@@ -29,8 +29,6 @@ class APIKeyCRUDViewGroup(crud.CRUDViewGroup):
     def get_additional_context_on_create(self, request, form):
         key_name = uuid.uuid4().hex
         user_created = str(request.user.key())
-        memcache_key = 'api-key-%s' % key_name
-        memcache.set(memcache_key, key_name)
         return {'key_name': key_name, 'user_created': user_created}
 
     authorize = login_required
