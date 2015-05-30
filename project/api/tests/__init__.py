@@ -47,6 +47,28 @@ class URLShortenTest(GAETestBase):
         short_url3 = ShortURL.get_by_key_name(short_url.result['path'])
         self.assertEquals(short_url3.iphone_url, 'iphoneschema://foobar')
 
+    def test_custom_name(self):
+        user = ShortURLUser(key_name='foobar')
+        user.put()
+        short_url = URLShorten(method='POST', user_created=str(user.key()),
+                               values={'long_url': 'https://console-dot-appupw.appspot.com/'})
+        short_url.do()
+        short_url2 = URLShorten(method='PATCH', user_created=str(user.key()),
+                                values={'custom_name': 'hoge'},
+                                path=short_url.result['path'])
+        short_url2.do()
+        self.assertEquals(short_url2.result['path'], 'hoge')
+        self.assertEquals(short_url2.code, 201)
+        short_another_url = URLShorten(method='POST', user_created=str(user.key()),
+                                       values={'long_url': 'https://console-dot-appupw.appspot.com/another'})
+        short_another_url.do()
+        short_another_url2 = URLShorten(method='PATCH', user_created=str(user.key()),
+                                        values={'custom_name': 'hoge'},
+                                        path=short_another_url.result['path'])
+        short_another_url2.do()
+        self.assertEquals(short_another_url2.code, 409)
+        self.assertEquals(short_another_url2.result['status'], 'error')
+
     def test_delete(self):
         user = ShortURLUser(key_name='foobar')
         user.put()

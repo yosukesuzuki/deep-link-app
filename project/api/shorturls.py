@@ -58,6 +58,18 @@ class URLShorten(object):
         for property in ['fallback_url', 'iphone_url', 'ipad_url', 'android_url', 'wp_url', 'firefox_url']:
             if property in self.values:
                 setattr(entity, property, self.values[property])
+        if 'custom_name' in self.values and self.values['custom_name'] != '':
+            custom_name_result = entity.set_custom_name(self.values['custom_name'])
+            if custom_name_result['code'] != 201:
+                self.result = custom_name_result
+                self.code = custom_name_result['code']
+                return
+            custom_name_entity = ShortURL.get_by_key_name(custom_name_result['path'])
+            short_url = self.model_to_dict(custom_name_entity)
+            short_url['status'] = 'success'
+            self.result = short_url
+            self.code = 201
+            return
         entity.put()
         short_url = self.model_to_dict(entity)
         short_url['status'] = 'success'

@@ -65,5 +65,6 @@ casper.test.begin 'url shorten api', 14, (test) ->
         method: "delete"
       , ->
         test.assertHttpStatus 204
+
   casper.run ->
     do test.done
