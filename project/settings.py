@@ -22,6 +22,7 @@ INSTALLED_APPS = (
     'main',
     'api',
     'admin',
+    'config',
     'kay.auth',
 )
 
@@ -29,6 +30,7 @@ APP_MOUNT_POINTS = {
     'main': '/',
     'api': '/api',
     'admin': '/admin',
+    'config': '/config',
 }
 
 # You can remove following settings if unnecessary.

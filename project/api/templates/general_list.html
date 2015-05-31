@@ -1,0 +1,70 @@
+{% extends "_internal/base.html" %}
+{% block title %}{{ _('List of model: %s' % model) }}{% endblock %}
+{% block description %}{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="blog-header">
+    <h1 class="blog-title">{{ _('List of model: %s' % model) }}</h1>
+    <p class="lead blog-description">{{ message }}</p>
+  </div>
+ <div class="row">
+    <div class="col-sm-8 blog-main">
+      <div class="row" style="margin-bottom:20px;">
+        <div class="col-sm-3">
+        <a href="{{ create_url() }}" class="btn btn-primary" id="createEntity">Create new entity</a>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table id="content-list-table" class="table table-bordered table-hover">
+          <thead>
+            <tr>
+              <th></th>
+              <th>API Key</th>
+              <th>Description</th>
+              <th></th>
+              <th>Update</th>
+              <th>Delete</th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for entity in entities %}
+            <tr>
+              <td>
+                <button type="button" class="btn btn-warning copy-to-clipboard" aria-label="Left Align" data-clipboard-text="{{ entity.key().name() }}">
+                  <span class="glyphicon glyphicon-paperclip" aria-hidden="true"></span> Copy
+                </button>
+              </td>
+              <td>{{ entity.key().name() }}</td>
+              <td>
+              {{ entity.description }}
+              </td>
+              <td>
+              {{ entity.updated_at }}
+              </td>
+              <td>
+                <a class="btn btn-default btn-sm" href="{{ update_url(entity) }}">{{ _('Update') }}</a>
+              </td>
+              <td>
+                <a class="btn btn-default btn-sm" href="{{ delete_url(entity) }}">{{ _('Delete') }}</a>
+              </td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% if cursor %}
+  <a href="{{ list_url(cursor) }}">{{ _('Next Page') }}</a>
+{% endif %}
+<script src="/media/js/zeroclipboard/ZeroClipboard.min.js"></script>
+<script>
+var client = new ZeroClipboard( document.querySelector('.copy-to-clipboard') );
+client.on( "ready", function( readyEvent ) {
+  client.on( "aftercopy", function( event ) {
+    alert("Copied text to clipboard: " + event.data["text/plain"] );
+  } );
+} );
+</script>
+{% endblock %}

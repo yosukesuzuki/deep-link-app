@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from google.appengine.api import memcache
 from kay.ext.testutils.gae_test_base import GAETestBase
 
-from core.models import ShortURL, ShortURLID, ShortURLUser
+from core.models import ShortURL, ShortURLID, ShortURLUser, create_api_key, validate_api_key, abort_api_key
 
 
 class PutShortURLTest(GAETestBase):
@@ -53,3 +54,34 @@ class ShortURLIDTest(GAETestBase):
         self.assertEquals(short_url_id.path, None)
         short_url_id.put()
         self.assertEquals(short_url_id.path, '1')
+
+
+class APIKeyTest(GAETestBase):
+    CLEANUP_USED_KIND = True
+    USE_PRODUCTION_STUBS = True
+
+    def test_create(self):
+        user = ShortURLUser(key_name='foobar')
+        user.put()
+        api_key = create_api_key(user)
+        memcache_key = 'api-key-%s' % api_key
+        memcached_data = memcache.get(memcache_key)
+        self.assertEquals(api_key, memcached_data.key().name())
+
+    def test_validate(self):
+        user = ShortURLUser(key_name='foobar')
+        user.put()
+        api_key = create_api_key(user)
+        self.assertNotEquals(validate_api_key(api_key), False)
+        memcache.delete('api-key-%s' % api_key)
+        self.assertNotEquals(validate_api_key(api_key), False)
+        memcache_result = memcache.get('api-key-%s' % api_key)
+        self.assertEquals(memcache_result.key().name(), api_key)
+
+    def test_abort(self):
+        user = ShortURLUser(key_name='foobar')
+        user.put()
+        api_key = create_api_key(user)
+        self.assertNotEquals(validate_api_key(api_key), False)
+        abort_api_key(api_key)
+        self.assertEquals(validate_api_key(api_key), False)
